@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface-2: #F0EEE7;
+    --line: #DCD8CF;
+    --line-soft: #E8E5DD;
+    --ink: #1B211E;
+    --ink-2: #4B5350;
+    --muted: #757D79;
+    --faint: #A8AEAA;
+    --brand: #1E6B5E;
+    --brand-d: #12463C;
+    --brand-l: #E4EEEA;
+    --dark: #10201C;
+    --dark-2: #173029;
+    --dark-line: #2A453E;
+    --dark-ink: #F4F1EA;
+    --dark-mut: #A9B3AE;
+
+    --font-serif: "Zodiak", Georgia, "Times New Roman", serif;
+    --font-sans: "Satoshi", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "liga" 1;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.012em;
+  }
+
+  h1, h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 1.15;
+  }
+}
+
+.font-serif-heading {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.font-sans-ui {
+  font-family: var(--font-sans);
+}
+
+.mono-num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.dashlist li {
+  position: relative;
+  padding-left: 1.15rem;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  margin-bottom: 0.6rem;
+  line-height: 1.5;
+}
+
+.dashlist li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62rem;
+  width: 0.6rem;
+  height: 1px;
+  background: var(--faint);
+}
+
+.dashlist li:last-child {
+  margin-bottom: 0;
+}
+

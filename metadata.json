@@ -1,0 +1,6 @@
+{
+  "name": "PharmaMind AI",
+  "description": "Virtual patient simulation and pharmaceutical care documentation platform for Ethiopian clinical pharmacy education.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

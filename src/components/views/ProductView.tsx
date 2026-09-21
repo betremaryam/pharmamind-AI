@@ -21,9 +21,10 @@ import { motion } from 'motion/react';
 interface ProductViewProps {
   onNavigate: (page: PageView) => void;
   onOpenSimulator: () => void;
+  onOpenClinicalTools?: () => void;
 }
 
-export const ProductView: React.FC<ProductViewProps> = ({ onNavigate, onOpenSimulator }) => {
+export const ProductView: React.FC<ProductViewProps> = ({ onNavigate, onOpenSimulator, onOpenClinicalTools }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'Foundation' | 'Intermediate' | 'Advanced'>('all');
 
   const filteredCases = activeTab === 'all' 
@@ -265,75 +266,158 @@ export const ProductView: React.FC<ProductViewProps> = ({ onNavigate, onOpenSimu
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Module 2 */}
-          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
-              <FileText className="w-4 h-4" />
-              Module 02 · Core
-            </span>
-            <h3 className="text-base font-bold text-[#1B211E]">Pharmaceutical care documentation</h3>
-            <p className="text-xs text-[#757D79] leading-relaxed">
-              SOAP notes, medication therapy reviews, care plans and intervention records against structured templates, with rubric feedback on each. This is the habit that outlasts the course — and the one Ethiopian studies repeatedly find missing in practice (Motta town study).
-            </p>
+          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
+                <FileText className="w-4 h-4" />
+                Module 02 · Core
+              </span>
+              <h3 className="text-base font-bold text-[#1B211E]">Pharmaceutical care documentation</h3>
+              <p className="text-xs text-[#757D79] leading-relaxed">
+                SOAP notes, medication therapy reviews, care plans and intervention records against structured templates, with rubric feedback on each. This is the habit that outlasts the course — and the one Ethiopian studies repeatedly find missing in practice (Motta town study).
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#E8E5DD]">
+              <button
+                type="button"
+                onClick={onOpenSimulator}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
+              >
+                <span>Practice SOAP in Case Simulator</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           {/* Module 3 */}
-          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
-              <MessageSquare className="w-4 h-4" />
-              Module 03
-            </span>
-            <h3 className="text-base font-bold text-[#1B211E]">AI clinical tutor</h3>
-            <p className="text-xs text-[#757D79] leading-relaxed">
-              Socratic questioning anchored to guidelines. Ask about an interaction and it asks what mechanism you expect before it confirms anything. It will not dose a real, identifiable patient.
-            </p>
+          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4" />
+                Module 03
+              </span>
+              <h3 className="text-base font-bold text-[#1B211E]">AI clinical tutor</h3>
+              <p className="text-xs text-[#757D79] leading-relaxed">
+                Socratic questioning anchored to guidelines. Ask about an interaction and it asks what mechanism you expect before it confirms anything. It will not dose a real, identifiable patient.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#E8E5DD]">
+              <button
+                type="button"
+                onClick={onOpenSimulator}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
+              >
+                <span>Launch Interactive Tutor</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           {/* Module 4 */}
-          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
-              <Pill className="w-4 h-4" />
-              Module 04
-            </span>
-            <h3 className="text-base font-bold text-[#1B211E]">Drug information centre</h3>
-            <p className="text-xs text-[#757D79] leading-relaxed">
-              Concise monographs covering indication, dosing, renal adjustment, key interactions, monitoring and counselling — with local availability notes and the substitution logic used at the counter.
-            </p>
+          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
+                <Pill className="w-4 h-4" />
+                Module 04
+              </span>
+              <h3 className="text-base font-bold text-[#1B211E]">Drug information centre</h3>
+              <p className="text-xs text-[#757D79] leading-relaxed">
+                Concise monographs covering indication, dosing, renal adjustment, key interactions, monitoring and counselling — with local availability notes and the substitution logic used at the counter.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#E8E5DD]">
+              {onOpenClinicalTools ? (
+                <button
+                  type="button"
+                  onClick={onOpenClinicalTools}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
+                >
+                  <span>Open Bedside Clinical Tools &amp; Drugs</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenSimulator}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
+                >
+                  <span>Explore Drug Interactions</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Module 5 */}
-          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
-              <GraduationCap className="w-4 h-4" />
-              Module 05
-            </span>
-            <h3 className="text-base font-bold text-[#1B211E]">Exam preparation hub</h3>
-            <p className="text-xs text-[#757D79] leading-relaxed">
-              Case-based items mapped to competency domains rather than chapters, so weak-domain analytics flow into the same cohort report as the simulator.
-            </p>
+          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
+                <GraduationCap className="w-4 h-4" />
+                Module 05
+              </span>
+              <h3 className="text-base font-bold text-[#1B211E]">Exam preparation hub</h3>
+              <p className="text-xs text-[#757D79] leading-relaxed">
+                Case-based items mapped to competency domains rather than chapters, so weak-domain analytics flow into the same cohort report as the simulator.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#E8E5DD]">
+              <button
+                type="button"
+                onClick={() => onNavigate('evidence')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
+              >
+                <span>View Competency Evidence Base</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           {/* Module 6 */}
-          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
-              <BarChart3 className="w-4 h-4" />
-              Module 06
-            </span>
-            <h3 className="text-base font-bold text-[#1B211E]">CPD and institutional reporting</h3>
-            <p className="text-xs text-[#757D79] leading-relaxed">
-              Cohort dashboards for educators and exportable activity records for practising pharmacists, designed for the re-licensure evidence the national CPD directive expects (Directive 332/2020).
-            </p>
+          <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#DCD8CF] shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1E6B5E] flex items-center gap-1.5">
+                <BarChart3 className="w-4 h-4" />
+                Module 06
+              </span>
+              <h3 className="text-base font-bold text-[#1B211E]">CPD and institutional reporting</h3>
+              <p className="text-xs text-[#757D79] leading-relaxed">
+                Cohort dashboards for educators and exportable activity records for practising pharmacists, designed for the re-licensure evidence the national CPD directive expects (Directive 332/2020).
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#E8E5DD]">
+              <button
+                type="button"
+                onClick={() => onNavigate('institutions')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
+              >
+                <span>Review Institutional Pilot Program</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           {/* Roadmap Card */}
-          <div className="p-5 sm:p-6 rounded-xl bg-[#FAF9F5] border border-[#DCD8CF] shadow-xs space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#757D79] flex items-center gap-1.5">
-              <WifiOff className="w-4 h-4 text-[#1E6B5E]" />
-              Roadmap
-            </span>
-            <h3 className="text-base font-bold text-[#1B211E]">Amharic interface &amp; offline use</h3>
-            <p className="text-xs text-[#757D79] leading-relaxed">
-              Planned for year two: an Amharic interface and a low-bandwidth, offline-capable client, because connectivity should not decide who gets to practise.
-            </p>
+          <div className="p-5 sm:p-6 rounded-xl bg-[#FAF9F5] border border-[#DCD8CF] shadow-xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#757D79] flex items-center gap-1.5">
+                <WifiOff className="w-4 h-4 text-[#1E6B5E]" />
+                Roadmap
+              </span>
+              <h3 className="text-base font-bold text-[#1B211E]">Amharic interface &amp; offline use</h3>
+              <p className="text-xs text-[#757D79] leading-relaxed">
+                Planned for year two: an Amharic interface and a low-bandwidth, offline-capable client, because connectivity should not decide who gets to practise.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-[#E8E5DD]">
+              <button
+                type="button"
+                onClick={() => onNavigate('about')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
+              >
+                <span>Read Roadmap in About</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </section>

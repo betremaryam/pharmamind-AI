@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PageView } from '../../types';
+import { AppImages } from '../../assets/images';
 import {
   ArrowRight,
   PlayCircle,
@@ -10,17 +11,125 @@ import {
   Building2,
   FileCheck,
   TrendingUp,
-  Activity
+  Activity,
+  Award,
+  GraduationCap,
+  Calculator,
+  HeartPulse,
+  AlertTriangle,
+  Stethoscope,
+  Clock,
+  Sparkles,
+  HelpCircle,
+  RotateCcw
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { HeroVideoBackground } from '../HeroVideoBackground';
+import { ThreeDimensionalDrugIcon } from '../ThreeDimensionalDrugIcon';
 
 interface HomeViewProps {
   onNavigate: (page: PageView) => void;
   onOpenSimulator: () => void;
+  onOpenClinicalTools?: () => void;
 }
 
-export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator }) => {
+export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator, onOpenClinicalTools }) => {
+  // Interactive clinical environment selector
+  const [activeDomain, setActiveDomain] = useState<'ward' | 'emergency' | 'counseling'>('ward');
+
+  // Interactive Bedside Micro-Sim Challenge state
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
+
+  const clinicalDomains = {
+    ward: {
+      id: 'ward',
+      title: 'Inpatient Ward Rounds & Multidisciplinary Care',
+      subtitle: 'Bedside Pharmacotherapy & TDM Monitoring',
+      image: AppImages.wardRound,
+      alt: 'Clinical pharmacist conducting hospital ward rounds with patient chart',
+      badge: 'Hospital Inpatient Practice',
+      description:
+        'Participate in interprofessional ward rounds alongside attending physicians and nurses. Identify drug therapy problems, optimize antimicrobial de-escalation, calculate renal clearances, and monitor therapeutic drug levels (TDM) at the patient bedside.',
+      keySkills: [
+        'Antimicrobial stewardship & AWaRe protocol de-escalation',
+        'Serum Creatinine & Cockcroft-Gault dosing titration',
+        'Aminoglycoside peak/trough therapeutic monitoring',
+        'Daily SOAP documentation for medical records'
+      ],
+      courseCode: 'PM-CPD-01',
+      actionText: 'Explore Antimicrobial Stewardship Course',
+      simulatorCase: 'Pneumonia & Sepsis Inpatient Case'
+    },
+    emergency: {
+      id: 'emergency',
+      title: 'Emergency Resuscitation & Acute First Aid',
+      subtitle: 'Time-Critical Emergency Pharmacotherapy',
+      image: AppImages.emergencyFirstAid,
+      alt: 'Emergency first aid and acute clinical resuscitation in clinical setting',
+      badge: 'Emergency Clinical Response',
+      description:
+        'Master rapid-triage clinical decision making during acute emergencies. Administer weight-based intramuscular adrenaline for anaphylaxis, navigate status asthmaticus spacer dosing, and treat severe hypoglycemic events under pressure.',
+      keySkills: [
+        'Anaphylaxis IM Epinephrine 1:1,000 weight-tiered dosing',
+        'Severe asthma spacer vs nebulization rescue protocols',
+        'Hypoglycemia Rule of 15 and IV dextrose resuscitation',
+        'Acute opioid overdose Naloxone titration'
+      ],
+      courseCode: 'PM-CPD-06',
+      actionText: 'Explore First Aid & Emergency Course',
+      simulatorCase: 'Acute Anaphylactic Shock Vignette'
+    },
+    counseling: {
+      id: 'counseling',
+      title: 'Ambulatory Care & Patient Counseling',
+      subtitle: 'Medication Therapy Management (MTM) & Adherence',
+      image: AppImages.pharmacistCounseling,
+      alt: 'Pharmacist conducting empathetic patient consultation and medicine review',
+      badge: 'Ambulatory & Community Care',
+      description:
+        'Deliver patient-centered consultations that bridge pharmacology and patient realities. Guide patients through chronic disease polypharmacy, validate inhaler technique, and adjust medication timing around Ethiopian fasting traditions.',
+      keySkills: [
+        'Medication Therapy Management (MTM) comprehensive review',
+        'Orthodox Lent (Tsome) & Ramadan chronotherapy adjustments',
+        'Teach-back method for metered-dose inhaler technique',
+        'Identification of OTC NSAID nephrotoxicity in hypertension'
+      ],
+      courseCode: 'PM-CPD-07',
+      actionText: 'Explore Ambulatory & Clinical Practice Course',
+      simulatorCase: 'Uncontrolled Diabetes & Fasting Case'
+    }
+  };
+
+  const activeContent = clinicalDomains[activeDomain];
+
+  // Quick Clinical Challenge Questions
+  const challengeQuestion = {
+    patient: '64-year-old female admitted with Diabetic Foot Ulcer. Labs: Serum Creatinine 2.5 mg/dL (eGFR 24 mL/min).',
+    regimen: 'Metformin 1000mg BID + Enalapril 20mg QD + Ketorolac 30mg IV Q8H + Gentamicin 240mg IV QD.',
+    question: 'As the clinical pharmacist reviewing this chart, which intervention is highest priority?',
+    options: [
+      {
+        id: 0,
+        text: 'Immediately stop Metformin (eGFR <30 mL/min lactic acidosis risk) and Ketorolac (acute renal failure with Enalapril + Gentamicin).',
+        correct: true,
+        rationale: 'Ethiopian National STG and KDIGO strictly mandate stopping Metformin when eGFR falls below 30 mL/min due to potentially fatal lactic acidosis. Furthermore, NSAIDs (Ketorolac) combined with ACE inhibitors and Aminoglycosides form a lethal "Triple Whammy" accelerating Acute Kidney Injury.'
+      },
+      {
+        id: 1,
+        text: 'Increase Gentamicin dose to 320mg to achieve rapid bactericidal tissue concentration in the foot ulcer.',
+        correct: false,
+        rationale: 'Incorrect: Aminoglycosides accumulate in renal impairment (eGFR 24 mL/min), which would cause irreversible nephrotoxicity and ototoxicity. Dosing must be decreased and guided by TDM.'
+      },
+      {
+        id: 2,
+        text: 'Add Aspirin 100mg for antiplatelet cardiovascular protection.',
+        correct: false,
+        rationale: 'Incorrect: Adding Aspirin does not address the critical acute toxicities of Metformin lactic acidosis and NSAID-induced acute renal failure on an already damaged kidney.'
+      }
+    ]
+  };
+
   return (
     <div className="space-y-16 sm:space-y-24">
       {/* HERO SECTION WITH AMBIENT VIDEO & ANIMATION BACKGROUND */}
@@ -46,7 +155,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator 
               </h1>
 
               <p className="text-base sm:text-lg text-[#4B5350] leading-relaxed max-w-[58ch]">
-                PharmaMind AI is a virtual patient simulator for Ethiopian clinical pharmacy. Learners work real cases, identify every drug therapy problem, defend a therapeutic plan and write the SOAP note — then a pharmacist-written rubric grades the reasoning, not the recall.
+                PharmaMind AI is a virtual patient simulator and accredited clinical academy for Ethiopian pharmacy. Practice bedside cases, identify drug therapy problems, defend therapeutic plans, and earn authenticated Certificates of Completion bearing your name.
               </p>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -60,17 +169,25 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator 
                 </button>
 
                 <button
+                  onClick={() => onNavigate('courses')}
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-[#12463C] bg-[#E4EEEA] border border-[#1E6B5E]/30 hover:bg-[#D4E5DF] transition-all cursor-pointer shadow-2xs"
+                >
+                  <Award className="w-4 h-4 text-[#1E6B5E]" />
+                  <span>Courses &amp; Certificates</span>
+                </button>
+
+                <button
                   onClick={() => onNavigate('institutions')}
                   className="inline-flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-[#1B211E] bg-white border border-[#DCD8CF] hover:border-[#1B211E] hover:bg-[#FAF9F5] transition-all cursor-pointer"
                 >
                   <Building2 className="w-4 h-4 text-[#1E6B5E]" />
-                  <span>For schools of pharmacy</span>
+                  <span>For Schools of Pharmacy</span>
                 </button>
               </div>
 
               <div className="pt-2 flex items-center gap-2 text-xs text-[#757D79]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#1E6B5E]"></span>
-                <span>Five validated cases live today: Hypertension · T2D in CKD · TB/HIV · Pneumonia · Heart failure</span>
+                <span>7 Accredited Clinical Courses · 5 Validated Inpatient Cases · Ethiopian STG Aligned</span>
               </div>
             </motion.div>
 
@@ -173,24 +290,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator 
                           <span className="mono-num font-semibold text-[#1B211E]">71%</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span>Documentation (20%)</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 h-1.5 bg-[#E4E1D9] rounded-full overflow-hidden">
-                            <div className="h-full bg-[#1E6B5E] w-[66%]"></div>
-                          </div>
-                          <span className="mono-num font-semibold text-[#1B211E]">66%</span>
-                        </div>
-                      </div>
                     </div>
-                  </div>
-
-                  {/* Preceptor Note */}
-                  <div className="p-2.5 rounded bg-[#F7F6F2] border border-[#E8E5DD] text-[0.75rem] text-[#4B5350] flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#1E6B5E] shrink-0 mt-0.5" />
-                    <span>
-                      <strong>Preceptor analysis:</strong> Missed NSAID blunting antihypertensive effect. The preceptor rationale is shown for every miss.
-                    </span>
                   </div>
 
                   <button
@@ -204,6 +304,291 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator 
               </div>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* NEW: INTERACTIVE CLINICAL DOMAINS GALLERY WITH PROFESSIONAL PHOTOGRAPHY */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6">
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#E4EEEA] text-[#12463C] border border-[#1E6B5E]/20 mb-2">
+                <Activity className="w-3.5 h-3.5 text-[#1E6B5E]" />
+                <span>Interactive Practice Domains</span>
+              </div>
+              <h2 className="font-serif-heading text-3xl sm:text-4xl text-[#1B211E]">
+                Explore Clinical Pharmacy in Action
+              </h2>
+              <p className="text-sm text-[#4B5350] mt-1 max-w-[62ch]">
+                Click each clinical setting to see real-world scenarios, required competencies, and the accredited training modules available for healthcare professionals.
+              </p>
+            </div>
+
+            {/* Domain Switcher Buttons */}
+            <div className="flex items-center gap-2 p-1.5 rounded-xl bg-[#F0EEE7] border border-[#DCD8CF] self-start md:self-auto overflow-x-auto max-w-full">
+              <button
+                type="button"
+                onClick={() => setActiveDomain('ward')}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                  activeDomain === 'ward'
+                    ? 'bg-white text-[#10201C] shadow-xs'
+                    : 'text-[#4B5350] hover:text-[#10201C]'
+                }`}
+              >
+                <Stethoscope className="w-4 h-4 text-[#1E6B5E]" />
+                <span>Hospital Ward Rounds</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveDomain('emergency')}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                  activeDomain === 'emergency'
+                    ? 'bg-white text-[#10201C] shadow-xs'
+                    : 'text-[#4B5350] hover:text-[#10201C]'
+                }`}
+              >
+                <HeartPulse className="w-4 h-4 text-[#1E6B5E]" />
+                <span>Emergency &amp; First Aid</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveDomain('counseling')}
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                  activeDomain === 'counseling'
+                    ? 'bg-white text-[#10201C] shadow-xs'
+                    : 'text-[#4B5350] hover:text-[#10201C]'
+                }`}
+              >
+                <Users className="w-4 h-4 text-[#1E6B5E]" />
+                <span>Ambulatory &amp; MTM</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Active Domain Interactive Card */}
+          <motion.div
+            key={activeDomain}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="bg-white rounded-2xl border border-[#DCD8CF] shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12"
+          >
+            {/* Left: Professional Photography Showcase */}
+            <div className="lg:col-span-6 relative group overflow-hidden bg-[#10201C]">
+              <img
+                src={activeContent.image}
+                alt={activeContent.alt}
+                referrerPolicy="no-referrer"
+                className="w-full h-80 sm:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105 opacity-95"
+              />
+              {/* Overlay vignette */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+              <div className="absolute bottom-5 left-5 right-5 text-white space-y-1 z-10">
+                <span className="inline-block px-2.5 py-1 rounded-full text-[0.7rem] font-bold bg-[#1E6B5E] text-white shadow-xs">
+                  {activeContent.badge}
+                </span>
+                <p className="text-sm font-semibold text-white/95 leading-snug">
+                  {activeContent.title}
+                </p>
+                <p className="text-xs text-white/70">
+                  Ethiopian Teaching Hospitals &amp; Community Practice Standard
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Clinical Details & Interactive Capabilities */}
+            <div className="lg:col-span-6 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <span className="text-xs font-mono font-bold text-[#1E6B5E] tracking-wider uppercase">
+                    {activeContent.courseCode} · Accredited Focus Area
+                  </span>
+                  <h3 className="font-serif-heading text-2xl font-bold text-[#1B211E]">
+                    {activeContent.title}
+                  </h3>
+                  <p className="text-xs font-medium text-[#757D79]">
+                    {activeContent.subtitle}
+                  </p>
+                </div>
+
+                <p className="text-sm text-[#4B5350] leading-relaxed">
+                  {activeContent.description}
+                </p>
+
+                {/* Core Clinical Competencies Checklist */}
+                <div className="space-y-2 pt-2 border-t border-[#E8E5DD]">
+                  <span className="text-[0.7rem] font-bold uppercase tracking-wider text-[#1B211E] block">
+                    Core Pharmacotherapy Competencies:
+                  </span>
+                  <ul className="space-y-2 text-xs text-[#3A423F]">
+                    {activeContent.keySkills.map((skill, sIdx) => (
+                      <li key={sIdx} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#1E6B5E] shrink-0 mt-0.5" />
+                        <span>{skill}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-[#E8E5DD] flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('courses')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1E6B5E] hover:bg-[#12463C] transition-all cursor-pointer shadow-xs"
+                >
+                  <Award className="w-4 h-4 text-emerald-300" />
+                  <span>{activeContent.actionText}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenSimulator}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-[#1B211E] hover:text-[#1E6B5E] hover:bg-[#FAF9F5] border border-[#DCD8CF] transition-colors cursor-pointer"
+                >
+                  <PlayCircle className="w-4 h-4 text-[#1E6B5E]" />
+                  <span>Test in Virtual Patient Sim</span>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* NEW: INTERACTIVE RAPID BEDSIDE CLINICAL CHALLENGE WIDGET */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6">
+        <div className="bg-[#FAF9F5] rounded-2xl border-2 border-[#DCD8CF] p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E8E5DD] pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#1E6B5E] text-white flex items-center justify-center shadow-xs">
+                <Sparkles className="w-5 h-5 text-emerald-300" />
+              </div>
+              <div>
+                <h3 className="font-serif-heading text-lg sm:text-xl font-bold text-[#1B211E]">
+                  Bedside Decision Mini-Challenge
+                </h3>
+                <p className="text-xs text-[#757D79]">
+                  Test your clinical decision-making on an actual Ethiopian bedside scenario.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-bold text-[#1E6B5E] bg-[#E4EEEA] px-2.5 py-1 rounded-md">
+                Interactive Preceptor Quiz
+              </span>
+              {showExplanation && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedOption(null);
+                    setShowExplanation(false);
+                  }}
+                  className="text-xs text-[#757D79] hover:text-[#10201C] flex items-center gap-1 cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Clinical Vignette Box */}
+          <div className="p-4 rounded-xl bg-white border border-[#DCD8CF] space-y-2 text-xs sm:text-sm">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#1E6B5E] uppercase tracking-wider">
+              <Stethoscope className="w-4 h-4" />
+              <span>Ward Case Presentation</span>
+            </div>
+            <p className="font-semibold text-[#1B211E]">
+              {challengeQuestion.patient}
+            </p>
+            <div className="p-2.5 rounded bg-[#FAF9F5] font-mono text-xs text-[#4B5350] border border-[#E8E5DD]">
+              Current Regimen: <strong>{challengeQuestion.regimen}</strong>
+            </div>
+            <p className="text-[#1B211E] font-medium pt-1">
+              {challengeQuestion.question}
+            </p>
+          </div>
+
+          {/* Interactive Options */}
+          <div className="space-y-3">
+            {challengeQuestion.options.map((option, idx) => {
+              const isSelected = selectedOption === idx;
+              return (
+                <div
+                  key={option.id}
+                  onClick={() => {
+                    setSelectedOption(idx);
+                    setShowExplanation(true);
+                  }}
+                  className={`p-4 rounded-xl border text-xs sm:text-sm cursor-pointer transition-all ${
+                    isSelected
+                      ? option.correct
+                        ? 'bg-emerald-50 border-emerald-500 ring-1 ring-emerald-400'
+                        : 'bg-red-50 border-red-400 ring-1 ring-red-300'
+                      : 'bg-white border-[#DCD8CF] hover:border-[#1E6B5E] hover:bg-[#FAF9F5]'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                        isSelected
+                          ? option.correct
+                            ? 'bg-emerald-700 text-white'
+                            : 'bg-red-600 text-white'
+                          : 'bg-[#F0EEE7] text-[#4B5350]'
+                      }`}
+                    >
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    <div className="space-y-1">
+                      <p className="font-medium text-[#1B211E] leading-relaxed">
+                        {option.text}
+                      </p>
+                      {isSelected && (
+                        <div className="pt-2 text-xs">
+                          <span
+                            className={`font-bold inline-block mr-1.5 ${
+                              option.correct ? 'text-emerald-800' : 'text-red-700'
+                            }`}
+                          >
+                            {option.correct ? '✓ Correct Clinical Decision!' : '✗ Clinical Guideline Warning:'}
+                          </span>
+                          <span className="text-[#4B5350] leading-relaxed">
+                            {option.rationale}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {showExplanation && (
+            <div className="p-4 rounded-xl bg-[#E4EEEA] border border-[#BBD7CF] text-xs text-[#12463C] flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#1E6B5E]" />
+                <span>
+                  Our 7 clinical courses feature <strong>10 in-depth scenario questions each</strong> with personalized certified completion!
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('courses')}
+                className="font-bold text-[#1E6B5E] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>Take Full Course Quiz</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -298,6 +683,280 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator 
         </div>
       </section>
 
+      {/* BEDSIDE CLINICAL TOOLS & CALCULATOR SHOWCASE */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6">
+        <div className="bg-white rounded-2xl border border-[#DCD8CF] p-6 sm:p-8 shadow-xs overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#E4EEEA] text-[#12463C] border border-[#1E6B5E]/20">
+                <Calculator className="w-3.5 h-3.5 text-[#1E6B5E]" />
+                <span>Bedside Clinical Pharmacy Suite</span>
+              </div>
+
+              <h2 className="font-serif-heading text-2xl sm:text-3xl font-bold text-[#1B211E]">
+                Clinical calculators, normal reference ranges &amp; cultural chronotherapy
+              </h2>
+
+              <p className="text-sm text-[#4B5350] leading-relaxed">
+                Seamlessly integrated with patient case workups or accessible standalone. Instant reference ranges, professional medical interpretations, and dosage adjustments grounded in the Ethiopian National Formulary.
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                <div
+                  onClick={onOpenClinicalTools}
+                  className="p-3 rounded-lg bg-[#FAF9F5] border border-[#E8E5DD] hover:border-[#1E6B5E] transition-all cursor-pointer group"
+                >
+                  <span className="text-[0.7rem] text-[#757D79] block">Cockcroft-Gault</span>
+                  <span className="text-xs font-bold text-[#1B211E] group-hover:text-[#1E6B5E]">CrCl (Renal Dose)</span>
+                  <span className="text-[0.68rem] text-emerald-700 font-medium block mt-0.5">Ref: 90–120 mL/min</span>
+                </div>
+
+                <div
+                  onClick={onOpenClinicalTools}
+                  className="p-3 rounded-lg bg-[#FAF9F5] border border-[#E8E5DD] hover:border-[#1E6B5E] transition-all cursor-pointer group"
+                >
+                  <span className="text-[0.7rem] text-[#757D79] block">BMI &amp; Weights</span>
+                  <span className="text-xs font-bold text-[#1B211E] group-hover:text-[#1E6B5E]">IBW &amp; AdjBW</span>
+                  <span className="text-[0.68rem] text-emerald-700 font-medium block mt-0.5">Ref: 18.5–24.9 kg/m²</span>
+                </div>
+
+                <div
+                  onClick={onOpenClinicalTools}
+                  className="p-3 rounded-lg bg-[#FAF9F5] border border-[#E8E5DD] hover:border-[#1E6B5E] transition-all cursor-pointer group"
+                >
+                  <span className="text-[0.7rem] text-[#757D79] block">Blood Pressure</span>
+                  <span className="text-xs font-bold text-[#1B211E] group-hover:text-[#1E6B5E]">HTN Staging (AHA/ACC)</span>
+                  <span className="text-[0.68rem] text-emerald-700 font-medium block mt-0.5">Ref: &lt;120/80 mmHg</span>
+                </div>
+
+                <div
+                  onClick={onOpenClinicalTools}
+                  className="p-3 rounded-lg bg-[#FAF9F5] border border-[#E8E5DD] hover:border-[#1E6B5E] transition-all cursor-pointer group"
+                >
+                  <span className="text-[0.7rem] text-[#757D79] block">Glycemic Panel</span>
+                  <span className="text-xs font-bold text-[#1B211E] group-hover:text-[#1E6B5E]">FBS &amp; HbA1c</span>
+                  <span className="text-[0.68rem] text-emerald-700 font-medium block mt-0.5">Ref: 70–99 mg/dL</span>
+                </div>
+
+                <div
+                  onClick={onOpenClinicalTools}
+                  className="p-3 rounded-lg bg-[#FAF9F5] border border-[#E8E5DD] hover:border-[#1E6B5E] transition-all cursor-pointer group"
+                >
+                  <span className="text-[0.7rem] text-[#757D79] block">Electrolytes</span>
+                  <span className="text-xs font-bold text-[#1B211E] group-hover:text-[#1E6B5E]">Anion Gap &amp; Ca Corr</span>
+                  <span className="text-[0.68rem] text-emerald-700 font-medium block mt-0.5">Ref: 8–12 mEq/L</span>
+                </div>
+
+                <div
+                  onClick={onOpenClinicalTools}
+                  className="p-3 rounded-lg bg-[#FAF9F5] border border-[#E8E5DD] hover:border-[#1E6B5E] transition-all cursor-pointer group"
+                >
+                  <span className="text-[0.7rem] text-[#757D79] block">Ethiopian Reality</span>
+                  <span className="text-xs font-bold text-[#1B211E] group-hover:text-[#1E6B5E]">Fasting Chronotherapy</span>
+                  <span className="text-[0.68rem] text-[#1E6B5E] font-medium block mt-0.5">Orthodox &amp; Ramadan</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={onOpenClinicalTools}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1E6B5E] hover:bg-[#12463C] transition-all cursor-pointer shadow-xs"
+                >
+                  <Calculator className="w-4 h-4" />
+                  <span>Open Interactive Clinical Tools</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenSimulator}
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-[#1B211E] hover:text-[#1E6B5E] hover:underline cursor-pointer"
+                >
+                  <span>Test in virtual patient case</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* 3D Drug Icon Interactive Display */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 rounded-xl bg-[#FAF9F5] border border-[#E8E5DD] text-center space-y-3">
+              <ThreeDimensionalDrugIcon size="lg" onClick={onOpenClinicalTools} badgeText="Interactive 3D Rx" />
+              <div className="space-y-1">
+                <h4 className="font-serif-heading font-bold text-base text-[#1B211E]">
+                  3D Pharmacotherapy Visualizer
+                </h4>
+                <p className="text-xs text-[#757D79] max-w-[32ch]">
+                  Click and hover over the capsule to inspect bedside calculations, normal reference intervals, and formulary safety checks.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenClinicalTools}
+                className="text-xs font-semibold text-[#1E6B5E] hover:underline pt-1 cursor-pointer"
+              >
+                Launch Bedside Tools &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ACCREDITED COURSES & CERTIFICATES SHOWCASE WITH RICH PHOTOGRAPHY */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6">
+        <div className="p-8 sm:p-10 rounded-2xl bg-white border border-[#DCD8CF] shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E8E5DD] pb-5">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#E4EEEA] text-[#12463C] border border-[#1E6B5E]/20 mb-2">
+                <GraduationCap className="w-3.5 h-3.5 text-[#1E6B5E]" />
+                <span>Accredited CPD Learning Tracks · Directive No. 332/2020</span>
+              </div>
+              <h2 className="font-serif-heading text-2xl sm:text-3xl font-bold text-[#1B211E]">
+                Featured Clinical Courses &amp; Certified Preceptorship
+              </h2>
+              <p className="text-xs sm:text-sm text-[#4B5350] mt-1 max-w-[64ch]">
+                Enroll with your contact and education credentials, complete interactive pharmacotherapy modules, pass the 10-question clinical evaluation (75%+), and earn verified printable certificates.
+              </p>
+            </div>
+
+            <button
+              onClick={() => onNavigate('courses')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#1E6B5E] hover:bg-[#12463C] text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer shadow-xs shrink-0"
+            >
+              <Award className="w-4 h-4 text-emerald-300" />
+              <span>Explore All 7 Courses</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Visual Photographic Course Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Course Card 1: First Aid */}
+            <div
+              onClick={() => onNavigate('courses')}
+              className="group rounded-xl border border-[#DCD8CF] hover:border-[#1E6B5E] bg-[#FAF9F5] hover:bg-white overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div className="relative h-44 overflow-hidden bg-[#10201C]">
+                <img
+                  src={AppImages.emergencyFirstAid}
+                  alt="Emergency First Aid and Acute Resuscitation Course"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3 bg-[#1E6B5E] text-white text-[0.68rem] font-bold px-2 py-0.5 rounded shadow-xs">
+                  NEW COURSE
+                </div>
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-xs text-emerald-900 text-[0.68rem] font-bold px-2 py-0.5 rounded border border-[#DCD8CF]">
+                  3.5 CPD Hrs
+                </div>
+              </div>
+
+              <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <span className="font-mono text-xs font-bold text-[#1E6B5E]">PM-CPD-06</span>
+                  <h4 className="font-serif-heading text-base font-bold text-[#1B211E] group-hover:text-[#1E6B5E] transition-colors leading-snug">
+                    Emergency First Aid &amp; Acute Clinical Response
+                  </h4>
+                  <p className="text-xs text-[#5B6360] line-clamp-2">
+                    EpiPen adrenaline dosing, status asthmaticus spacer titration, hypoglycemia Rule of 15, and 10 scenario questions.
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-[#E8E5DD] flex items-center justify-between text-xs text-[#757D79]">
+                  <span>10 Evaluation Qs</span>
+                  <span className="font-semibold text-[#1E6B5E] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    <span>Enroll Now</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Course Card 2: Antimicrobial Stewardship */}
+            <div
+              onClick={() => onNavigate('courses')}
+              className="group rounded-xl border border-[#DCD8CF] hover:border-[#1E6B5E] bg-[#FAF9F5] hover:bg-white overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div className="relative h-44 overflow-hidden bg-[#10201C]">
+                <img
+                  src={AppImages.wardRound}
+                  alt="Antimicrobial Stewardship Ward Rounds Course"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3 bg-[#10201C] text-white text-[0.68rem] font-bold px-2 py-0.5 rounded shadow-xs">
+                  INPATIENT CARE
+                </div>
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-xs text-emerald-900 text-[0.68rem] font-bold px-2 py-0.5 rounded border border-[#DCD8CF]">
+                  4.0 CPD Hrs
+                </div>
+              </div>
+
+              <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <span className="font-mono text-xs font-bold text-[#1E6B5E]">PM-CPD-01</span>
+                  <h4 className="font-serif-heading text-base font-bold text-[#1B211E] group-hover:text-[#1E6B5E] transition-colors leading-snug">
+                    Antimicrobial Stewardship &amp; Hospital Infections
+                  </h4>
+                  <p className="text-xs text-[#5B6360] line-clamp-2">
+                    WHO AWaRe classification, surgical prophylaxis timing, and TDM safety for Aminoglycosides.
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-[#E8E5DD] flex items-center justify-between text-xs text-[#757D79]">
+                  <span>10 Evaluation Qs</span>
+                  <span className="font-semibold text-[#1E6B5E] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    <span>Enroll Now</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Course Card 3: Ambulatory & MTM */}
+            <div
+              onClick={() => onNavigate('courses')}
+              className="group rounded-xl border border-[#DCD8CF] hover:border-[#1E6B5E] bg-[#FAF9F5] hover:bg-white overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            >
+              <div className="relative h-44 overflow-hidden bg-[#10201C]">
+                <img
+                  src={AppImages.pharmacistCounseling}
+                  alt="Ambulatory Care and Patient Consultation Course"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3 bg-[#1E6B5E] text-white text-[0.68rem] font-bold px-2 py-0.5 rounded shadow-xs">
+                  NEW COURSE
+                </div>
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-xs text-emerald-900 text-[0.68rem] font-bold px-2 py-0.5 rounded border border-[#DCD8CF]">
+                  4.0 CPD Hrs
+                </div>
+              </div>
+
+              <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <span className="font-mono text-xs font-bold text-[#1E6B5E]">PM-CPD-07</span>
+                  <h4 className="font-serif-heading text-base font-bold text-[#1B211E] group-hover:text-[#1E6B5E] transition-colors leading-snug">
+                    Ambulatory Clinical Practice &amp; MTM Counseling
+                  </h4>
+                  <p className="text-xs text-[#5B6360] line-clamp-2">
+                    Comprehensive medication review, inhaler technique validation, and fasting chronotherapy.
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-[#E8E5DD] flex items-center justify-between text-xs text-[#757D79]">
+                  <span>10 Evaluation Qs</span>
+                  <span className="font-semibold text-[#1E6B5E] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                    <span>Enroll Now</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* THE PROBLEM SECTION */}
       <section className="bg-[#F0EEE7] py-14 sm:py-20 border-y border-[#DCD8CF]">
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
@@ -337,7 +996,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSimulator 
               <span className="md:col-span-1 font-serif-heading text-[#1E6B5E] font-bold text-lg">03</span>
               <h4 className="md:col-span-4 text-base font-bold text-[#1B211E]">Documentation is rarely taught as a skill</h4>
               <p className="md:col-span-7 text-sm text-[#4B5350] leading-relaxed">
-                Pharmacists identify drug therapy problems but seldom document them systematically. Studies of community and hospital pharmacies in Motta town describe lack of templates and time as persistent barriers to pharmaceutical care.
+                Pharmacists identify drug therapy problems but seldom document them systematically. Studies of community and hospital pharmacies describe lack of templates and time as persistent barriers to pharmaceutical care.
               </p>
             </div>
 

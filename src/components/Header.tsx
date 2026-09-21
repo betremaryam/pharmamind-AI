@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
 import { PageView } from '../types';
-import { Menu, X, ArrowRight, PlayCircle, ShieldCheck } from 'lucide-react';
+import { Menu, X, ArrowRight, ShieldCheck, Calculator, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ThreeDimensionalDrugIcon } from './ThreeDimensionalDrugIcon';
 
 interface HeaderProps {
   currentPage: PageView;
   onNavigate: (page: PageView) => void;
-  onOpenSimulator: () => void;
+  onOpenSimulator?: () => void;
+  onOpenClinicalTools?: () => void;
+  onOpenChatbot?: () => void;
+  onOpenShareForReview?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onOpenSimulator }) => {
+export const Header: React.FC<HeaderProps> = ({
+  currentPage,
+  onNavigate,
+  onOpenSimulator,
+  onOpenClinicalTools,
+  onOpenChatbot,
+  onOpenShareForReview
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: { label: string; page: PageView }[] = [
     { label: 'Home', page: 'home' },
+    { label: 'Courses & CPD', page: 'courses' },
     { label: 'Product', page: 'product' },
     { label: 'For institutions', page: 'institutions' },
     { label: 'Evidence', page: 'evidence' },
@@ -72,19 +84,35 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onOpenS
             })}
           </nav>
 
-          {/* Desktop Actions */}
+          {/* Desktop Actions - Clinical Tools, Share for Review, and Request */}
           <div className="hidden sm:flex items-center gap-2.5">
-            <button
-              onClick={onOpenSimulator}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1E6B5E] bg-[#E4EEEA] hover:bg-[#d8e6e1] transition-colors border border-[#1E6B5E]/20 cursor-pointer"
-            >
-              <PlayCircle className="w-3.5 h-3.5" />
-              <span>Interactive Case Demo</span>
-            </button>
+            {onOpenShareForReview && (
+              <button
+                type="button"
+                onClick={onOpenShareForReview}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#12463C] bg-[#E4EEEA] hover:bg-[#D4E4DE] transition-colors border border-[#BBD7CF] cursor-pointer shadow-2xs"
+                title="Generate direct links to share with professionals and faculty reviewers"
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#1E6B5E]" />
+                <span>Share for Review</span>
+              </button>
+            )}
+
+            {onOpenClinicalTools && (
+              <button
+                type="button"
+                onClick={onOpenClinicalTools}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1B211E] bg-[#FAF9F5] hover:bg-[#F0EEE7] transition-colors border border-[#DCD8CF] cursor-pointer shadow-2xs"
+                title="Bedside Renal Calculator, BMI, BP & Formulary Interactions"
+              >
+                <ThreeDimensionalDrugIcon size="sm" badgeText="Rx" />
+                <span>Clinical Tools</span>
+              </button>
+            )}
 
             <button
               onClick={() => handleNavClick('contact')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#1E6B5E] hover:bg-[#12463C] active:translate-y-px transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#1E6B5E] hover:bg-[#12463C] active:translate-y-px transition-all shadow-xs cursor-pointer"
             >
               <span>Request a pilot</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -93,14 +121,17 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onOpenS
 
           {/* Mobile Menu Toggle Button */}
           <div className="flex items-center gap-2 lg:hidden">
-            <button
-              onClick={onOpenSimulator}
-              className="sm:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-[#1E6B5E] bg-[#E4EEEA] border border-[#1E6B5E]/20"
-              aria-label="Open Demo"
-            >
-              <PlayCircle className="w-3.5 h-3.5" />
-              <span>Demo</span>
-            </button>
+            {onOpenClinicalTools && (
+              <button
+                type="button"
+                onClick={onOpenClinicalTools}
+                className="sm:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-[#1B211E] bg-[#FAF9F5] border border-[#DCD8CF]"
+                title="Clinical Tools"
+              >
+                <Calculator className="w-3.5 h-3.5 text-[#1E6B5E]" />
+                <span>Tools</span>
+              </button>
+            )}
 
             <button
               id="menuBtn"
@@ -146,16 +177,31 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, onOpenS
             </div>
 
             <div className="pt-3 border-t border-[#E8E5DD] flex flex-col gap-2">
-              <button
-                onClick={() => {
-                  onOpenSimulator();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-lg text-sm font-semibold text-[#1E6B5E] bg-[#E4EEEA] border border-[#1E6B5E]/30"
-              >
-                <PlayCircle className="w-4 h-4" />
-                <span>Launch Interactive Case Demo</span>
-              </button>
+              {onOpenShareForReview && (
+                <button
+                  onClick={() => {
+                    onOpenShareForReview();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-semibold text-[#12463C] bg-[#E4EEEA] border border-[#BBD7CF]"
+                >
+                  <Share2 className="w-4 h-4 text-[#1E6B5E]" />
+                  <span>Share Platform for Peer Review</span>
+                </button>
+              )}
+
+              {onOpenClinicalTools && (
+                <button
+                  onClick={() => {
+                    onOpenClinicalTools();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-sm font-semibold text-[#1B211E] bg-white border border-[#DCD8CF]"
+                >
+                  <Calculator className="w-4 h-4 text-[#1E6B5E]" />
+                  <span>Clinical Tools &amp; Calculators</span>
+                </button>
+              )}
 
               <button
                 onClick={() => handleNavClick('contact')}

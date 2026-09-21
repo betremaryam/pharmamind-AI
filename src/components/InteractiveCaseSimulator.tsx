@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CASE_STUDIES } from '../data/cases';
+import { PATIENT_COUNSELING_GUIDES } from '../data/patientCounseling';
 import { CaseStudy } from '../types';
+import { ClinicalToolsModal } from './ClinicalToolsModal';
+import { PreceptorLogbookModal } from './PreceptorLogbookModal';
 import {
   Stethoscope,
   AlertCircle,
@@ -15,7 +18,17 @@ import {
   X,
   Send,
   Loader2,
-  Mail
+  Mail,
+  Volume2,
+  VolumeX,
+  Clock,
+  Play,
+  Pause,
+  Calculator,
+  Languages,
+  Printer,
+  FileCheck2,
+  Sparkles
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { submitFormspreeResponse, getFormspreeTarget } from '../services/formspree';
@@ -45,14 +58,67 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
   const [reportSent, setReportSent] = useState<boolean>(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
+  // Professional Features State: OSCE Mode, Audio Voice, Clinical Tools & Preceptor Logbook
+  const [isOsceMode, setIsOsceMode] = useState<boolean>(false);
+  const [osceSecondsLeft, setOsceSecondsLeft] = useState<number>(480); // 8 minutes exam station
+  const [isOsceRunning, setIsOsceRunning] = useState<boolean>(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [isRenalCalcOpen, setIsRenalCalcOpen] = useState<boolean>(false);
+  const [isLogbookOpen, setIsLogbookOpen] = useState<boolean>(false);
+  const [showCounselingGuide, setShowCounselingGuide] = useState<boolean>(false);
+
+  // OSCE Station Timer Effect
+  useEffect(() => {
+    if (!isOsceMode || !isOsceRunning) return;
+    const timer = setInterval(() => {
+      setOsceSecondsLeft((prev) => {
+        if (prev <= 1) {
+          setIsOsceRunning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isOsceMode, isOsceRunning]);
+
+  // Audio Speech Synthesis for Patient Voice
+  const handlePlayVoice = (text: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      alert('Speech audio playback is not supported in this browser environment.');
+      return;
+    }
+    if (isPlayingAudio) {
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.93; // comfortable cadence
+    utterance.pitch = 0.98;
+    utterance.onend = () => setIsPlayingAudio(false);
+    utterance.onerror = () => setIsPlayingAudio(false);
+    setIsPlayingAudio(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
   const activeCase: CaseStudy =
     CASE_STUDIES.find((c) => c.id === selectedCaseId) || CASE_STUDIES[0];
 
+  const counselingGuide = PATIENT_COUNSELING_GUIDES[activeCase.id] || PATIENT_COUNSELING_GUIDES['htn-01'];
+
   const handleCaseChange = (caseId: string) => {
+    if (isPlayingAudio && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(false);
+    }
     setSelectedCaseId(caseId);
     setCurrentStep(1);
     setReportSent(false);
     setReportError(null);
+    setOsceSecondsLeft(480);
+    setIsOsceRunning(false);
     const newCase = CASE_STUDIES.find((c) => c.id === caseId) || CASE_STUDIES[0];
     // Pick first 2 actual problems by default for ease of testing
     const defaults = newCase.availableOptions.filter((o) => o.isActualProblem).slice(0, 2).map((o) => o.id);
@@ -151,6 +217,41 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
         </div>
 
         <div className="flex items-center gap-2">
+          {/* OSCE Station Timer Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const newMode = !isOsceMode;
+              setIsOsceMode(newMode);
+              if (newMode) {
+                setOsceSecondsLeft(480);
+                setIsOsceRunning(true);
+              } else {
+                setIsOsceRunning(false);
+              }
+            }}
+            className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              isOsceMode
+                ? 'bg-amber-400 text-[#173029] font-bold shadow-xs'
+                : 'bg-[#2A453E] text-[#8FB8AC] hover:text-white'
+            }`}
+            title="Toggle Timed 8-Minute OSCE Exam Station"
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isOsceMode ? 'OSCE Active' : 'OSCE Mode'}</span>
+          </button>
+
+          {/* Quick Bedside Tools Launcher */}
+          <button
+            type="button"
+            onClick={() => setIsRenalCalcOpen(true)}
+            className="px-2.5 py-1 rounded text-xs font-semibold bg-[#2A453E] hover:bg-[#3B5D54] text-[#F4F1EA] flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Open Bedside Renal Dosing Calculator & Formulary Interactions"
+          >
+            <Calculator className="w-3.5 h-3.5 text-[#8FB8AC]" />
+            <span className="hidden sm:inline">Bedside Tools</span>
+          </button>
+
           {/* Case Selector */}
           <select
             value={selectedCaseId}
@@ -176,6 +277,46 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
           )}
         </div>
       </div>
+
+      {/* OSCE Exam Mode Banner */}
+      {isOsceMode && (
+        <div className="bg-[#FFFBEB] border-b border-amber-300 px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-950">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping"></span>
+            <strong>TIMED OSCE STATION (8-Min Station Limit):</strong>
+            <span className="hidden sm:inline">Simulating University Clerkship Qualifying Exam Conditions.</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span
+              className={`font-mono text-xs sm:text-sm font-bold px-2.5 py-0.5 rounded ${
+                osceSecondsLeft < 120
+                  ? 'bg-rose-600 text-white animate-pulse'
+                  : 'bg-amber-200 text-amber-950'
+              }`}
+            >
+              {Math.floor(osceSecondsLeft / 60)}:{(osceSecondsLeft % 60).toString().padStart(2, '0')}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsOsceRunning(!isOsceRunning)}
+              className="p-1 rounded bg-amber-200 hover:bg-amber-300 text-amber-950 transition-colors"
+              title={isOsceRunning ? 'Pause Timer' : 'Resume Timer'}
+            >
+              {isOsceRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOsceSecondsLeft(480);
+                setIsOsceRunning(true);
+              }}
+              className="text-[0.7rem] text-amber-800 underline hover:text-amber-950"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Steps Navigation Bar */}
       <div className="bg-[#F0EEE7] border-b border-[#DCD8CF] px-4 sm:px-6 py-2.5 flex items-center gap-1.5 overflow-x-auto">
@@ -259,6 +400,34 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
                 <p className="text-xs text-[#4B5350] leading-relaxed">
                   {activeCase.patient.history}
                 </p>
+
+                {/* Patient Voice Consultation Audio */}
+                <div className="mt-3 pt-2.5 border-t border-[#E8E5DD] flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => handlePlayVoice(counselingGuide.chiefComplaintVoice)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                      isPlayingAudio
+                        ? 'bg-rose-600 text-white animate-pulse'
+                        : 'bg-[#1E6B5E] text-white hover:bg-[#12463C]'
+                    }`}
+                  >
+                    {isPlayingAudio ? (
+                      <>
+                        <VolumeX className="w-3.5 h-3.5" />
+                        <span>Stop Patient Audio</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Listen to Patient</span>
+                      </>
+                    )}
+                  </button>
+                  <span className="text-[0.68rem] text-[#757D79] italic">
+                    {isPlayingAudio ? 'Speaking simulation...' : 'Auditory Diagnostic Voice'}
+                  </span>
+                </div>
               </div>
 
               <div className="p-4 rounded-lg bg-[#F7F6F2] border border-[#E8E5DD]">
@@ -288,6 +457,17 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
                       • {lab}
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-[#E8E5DD] flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsRenalCalcOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold text-[#1E6B5E] bg-white border border-[#BBD7CF] hover:bg-[#E4EEEA] transition-colors cursor-pointer"
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                    <span>Check Renal Clearance (CrCl)</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -447,6 +627,71 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
               </div>
             </div>
 
+            {/* Bilingual Patient Counseling Card (Amharic & English) */}
+            <div className="p-4 rounded-xl border border-[#BBD7CF] bg-[#F7FAF9] space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Languages className="w-4 h-4 text-[#1E6B5E]" />
+                  <h4 className="text-xs font-bold text-[#12463C] uppercase tracking-wider">
+                    Bilingual Patient Counseling Station · የታካሚ የምክር አገልግሎት
+                  </h4>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCounselingGuide(!showCounselingGuide)}
+                  className="text-xs font-semibold px-2.5 py-1 rounded-md border border-[#1E6B5E] text-[#1E6B5E] hover:bg-[#E4EEEA] transition-colors"
+                >
+                  {showCounselingGuide ? 'Minimize Guide' : 'View Full Amharic Script'}
+                </button>
+              </div>
+
+              {showCounselingGuide ? (
+                <div className="space-y-3 pt-1 text-xs">
+                  <div className="p-3 bg-white rounded-lg border border-[#DCD8CF] space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#1E6B5E]">Amharic Direct Patient Script (በአማርኛ የሚሰጥ ምክር)</span>
+                      <button
+                        type="button"
+                        onClick={() => handlePlayVoice(counselingGuide.englishTranslation)}
+                        className="inline-flex items-center gap-1 text-[0.7rem] px-2 py-0.5 rounded bg-[#E4EEEA] text-[#12463C] hover:bg-[#cde2dc]"
+                      >
+                        <Volume2 className="w-3 h-3" />
+                        <span>Listen to Audio Guide</span>
+                      </button>
+                    </div>
+                    <p className="font-serif text-sm text-[#1B211E] leading-relaxed bg-[#FAF9F5] p-2.5 rounded border border-[#E8E5DD]">
+                      &ldquo;{counselingGuide.amharicScript}&rdquo;
+                    </p>
+                    <p className="text-[0.75rem] text-[#757D79] italic">
+                      Phonetic: &ldquo;{counselingGuide.amharicPhonetic}&rdquo;
+                    </p>
+                    <p className="text-xs text-[#4B5350] pt-1">
+                      <strong>English Translation: </strong>{counselingGuide.englishTranslation}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-white rounded-lg border border-[#DCD8CF] space-y-2">
+                    <span className="font-bold text-[#1B211E] block">Key Clinical Counseling Focus Points:</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                      {counselingGuide.counselingFocusPoints.map((item, idx) => (
+                        <div key={idx} className="p-2 rounded bg-[#FAF9F5] border border-[#E8E5DD]">
+                          <strong className="text-[#1E6B5E] block text-[0.72rem] uppercase tracking-wide">
+                            {item.topic}
+                          </strong>
+                          <p className="text-[#1B211E] font-medium mt-0.5">{item.amharic}</p>
+                          <p className="text-[#757D79] text-[0.7rem] mt-0.5">{item.english}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-[#4B5350]">
+                  Essential for clinical pharmacist licensing: practice delivering culturally competent advice in Amharic with phonetic support for renal and fasting precautions.
+                </p>
+              )}
+            </div>
+
             <div className="flex items-center justify-between pt-2">
               <button
                 onClick={() => setCurrentStep(2)}
@@ -454,13 +699,23 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
               >
                 Back
               </button>
-              <button
-                onClick={() => setCurrentStep(4)}
-                className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#1E6B5E] hover:bg-[#12463C]"
-              >
-                <span>Write SOAP Note</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsRenalCalcOpen(true)}
+                  className="px-3 py-2 rounded-lg text-xs font-semibold text-[#1E6B5E] border border-[#BBD7CF] hover:bg-[#E4EEEA] flex items-center gap-1.5"
+                >
+                  <Calculator className="w-3.5 h-3.5" />
+                  <span>Bedside Calculator</span>
+                </button>
+                <button
+                  onClick={() => setCurrentStep(4)}
+                  className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-[#1E6B5E] hover:bg-[#12463C]"
+                >
+                  <span>Write SOAP Note</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -651,6 +906,30 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
               </div>
             </div>
 
+            {/* Preceptor Verification & Clerkship Sign-Off Sheet */}
+            <div className="p-4 rounded-xl border border-[#BBD7CF] bg-[#E4EEEA]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <FileCheck2 className="w-4 h-4 text-[#1E6B5E]" />
+                  <h4 className="text-xs font-bold text-[#12463C] uppercase tracking-wider">
+                    Official Clerkship Logbook Verification Sheet
+                  </h4>
+                </div>
+                <p className="text-xs text-[#4B5350]">
+                  Generate a printable formal evaluation sheet with institutional seal, preceptor rubric grades, competencies verified, and physical signature lines.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLogbookOpen(true)}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#1E6B5E] text-white hover:bg-[#12463C] transition-colors cursor-pointer shrink-0 shadow-xs"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Open Printable Logbook</span>
+              </button>
+            </div>
+
             {/* Formspree Case Report Submission to Preceptor / Faculty */}
             <div className="p-5 rounded-xl border border-[#DCD8CF] bg-[#FAF9F5] space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -794,6 +1073,38 @@ export const InteractiveCaseSimulator: React.FC<InteractiveCaseSimulatorProps> =
           </motion.div>
         )}
       </div>
+
+      {/* Bedside Renal Dosing & Clinical Tools Modal */}
+      <ClinicalToolsModal
+        isOpen={isRenalCalcOpen}
+        onClose={() => setIsRenalCalcOpen(false)}
+        initialPatientData={{
+          age: activeCase.patient.age,
+          weight: parseFloat(activeCase.patient.vitals.weight) || 70,
+          gender: activeCase.patient.gender === 'Female' ? 'Female' : 'Male',
+          scr: parseFloat(activeCase.patient.vitals.scr) || 1.1,
+          systolic: parseInt((activeCase.patient.vitals.bp || '').split('/')[0]) || 140,
+          diastolic: parseInt((activeCase.patient.vitals.bp || '').split('/')[1]) || 90,
+          heartRate: parseInt(activeCase.patient.vitals.hr) || 76
+        }}
+      />
+
+      {/* Official Preceptor Verification & Clerkship Sign-Off Sheet Modal */}
+      <PreceptorLogbookModal
+        isOpen={isLogbookOpen}
+        onClose={() => setIsLogbookOpen(false)}
+        activeCase={activeCase}
+        studentName={studentName || 'Candidate Intern'}
+        studentEmail={studentEmail}
+        totalScore={totalScore}
+        problemFindingScore={problemFindingScore}
+        reasoningScore={reasoningScore}
+        documentationScore={documentationScore}
+        userPlanText={userPlanText}
+        identifiedProblems={selectedProblemIds
+          .map((id) => activeCase.availableOptions.find((o) => o.id === id)?.text)
+          .filter(Boolean) as string[]}
+      />
     </div>
   );
 };

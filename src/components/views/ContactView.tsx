@@ -12,7 +12,8 @@ import {
   Loader2,
   AlertCircle,
   Settings,
-  Mail
+  Mail,
+  Phone
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
@@ -25,16 +26,31 @@ import {
 interface ContactViewProps {
   onNavigate: (page: PageView) => void;
   onOpenSimulator: () => void;
+  onOpenChatbot?: () => void;
+  onOpenSecurity?: () => void;
 }
 
-export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimulator }) => {
+export const ContactView: React.FC<ContactViewProps> = ({
+  onNavigate,
+  onOpenSimulator,
+  onOpenChatbot,
+  onOpenSecurity
+}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [role, setRole] = useState('Pharmacy educator or dean');
   const [institution, setInstitution] = useState('');
   const [cohortSize, setCohortSize] = useState('30–60 students');
   const [message, setMessage] = useState('');
   const [submittedInquiry, setSubmittedInquiry] = useState<PilotInquiry | null>(null);
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(FORMSPREE_FALLBACK_EMAIL);
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 2000);
+  };
 
   // Formspree state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,6 +95,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
       _subject: `New PharmaMind Pilot Inquiry: ${name} (${institution || 'Independent'})`,
       name: name.trim(),
       email: email.trim(),
+      phone: phone.trim() || 'Not provided',
       role,
       institution: institution.trim() || 'Not specified',
       cohortSize,
@@ -95,6 +112,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
       setSubmittedInquiry({
         name: name.trim(),
         email: email.trim(),
+        phone: phone.trim() || undefined,
         role,
         institution: institution.trim() || 'Not specified',
         cohortSize,
@@ -104,6 +122,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
       // Clear inputs
       setName('');
       setEmail('');
+      setPhone('');
       setInstitution('');
       setMessage('');
     } else {
@@ -131,34 +150,157 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
               Both are welcome. If you teach pharmacy, supervise a hospital department, review clinical content or fund early-stage health education work in Ethiopia, this is the right channel.
             </p>
 
+            {/* Workable Direct Medical Contact Card */}
+            <div className="p-5 rounded-xl bg-white border-2 border-[#1E6B5E]/30 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-[#E4EEEA] text-[#1E6B5E] flex items-center justify-center font-bold">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#1B211E]">Direct Clinical &amp; Pilot Liaison</h3>
+                    <p className="text-xs text-[#757D79]">Pharmacist Betremaryam (Addis Ababa)</p>
+                  </div>
+                </div>
+                <span className="text-[0.68rem] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Active Channel
+                </span>
+              </div>
+
+              <div className="p-3 rounded-lg bg-[#FAF9F5] border border-[#DCD8CF] space-y-2 text-xs">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-[#757D79] font-medium">Direct Email:</span>
+                  <a
+                    href={`mailto:${FORMSPREE_FALLBACK_EMAIL}?subject=PharmaMind%20AI%20Inquiry%20from%20Colleague`}
+                    className="font-mono font-semibold text-[#1E6B5E] hover:underline break-all"
+                  >
+                    {FORMSPREE_FALLBACK_EMAIL}
+                  </a>
+                </div>
+                <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-[#E8E5DD]">
+                  <span className="text-[#757D79] font-medium">Phone / WhatsApp:</span>
+                  <span className="font-mono text-[#1B211E] font-medium">+251 91 100 0000 / +251 92 000 0000</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <a
+                  href={`mailto:${FORMSPREE_FALLBACK_EMAIL}?subject=PharmaMind%20AI%20Pilot%20&%20Partnership%20Inquiry`}
+                  className="flex-1 min-w-[140px] px-3 py-2 rounded-lg bg-[#1E6B5E] hover:bg-[#12463C] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Send Email Now</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={handleCopyEmail}
+                  className="px-3 py-2 rounded-lg bg-[#FAF9F5] hover:bg-[#F0EEE6] border border-[#DCD8CF] text-[#1B211E] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  {emailCopied ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="w-3.5 h-3.5 text-[#757D79]" />
+                      <span>Copy Email</span>
+                    </>
+                  )}
+                </button>
+                {onOpenChatbot && (
+                  <button
+                    type="button"
+                    onClick={onOpenChatbot}
+                    className="w-full sm:w-auto px-3 py-2 rounded-lg bg-[#10201C] hover:bg-[#1C362F] text-[#8FB8AC] text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Stethoscope className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Ask Pharmacist Betremaryam (AI)</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="space-y-4 pt-2 border-t border-[#DCD8CF]">
-              <div className="p-4 rounded-lg bg-white border border-[#DCD8CF]">
-                <h4 className="text-sm font-bold text-[#1B211E] mb-1">Schools of pharmacy</h4>
-                <p className="text-xs text-[#757D79] leading-relaxed">
+              <div
+                onClick={() => onNavigate('institutions')}
+                className="p-4 rounded-lg bg-white border border-[#DCD8CF] hover:border-[#1E6B5E] transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-[#1B211E] group-hover:text-[#1E6B5E] transition-colors">
+                    Schools of pharmacy
+                  </h4>
+                  <ArrowRight className="w-4 h-4 text-[#757D79] group-hover:text-[#1E6B5E] group-hover:translate-x-1 transition-all" />
+                </div>
+                <p className="text-xs text-[#757D79] leading-relaxed mt-1">
                   Six-week pilot with one cohort, free of charge, in exchange for pre and post competency data your faculty own and publish.
                 </p>
               </div>
 
-              <div className="p-4 rounded-lg bg-white border border-[#DCD8CF]">
-                <h4 className="text-sm font-bold text-[#1B211E] mb-1">Clinical reviewers</h4>
-                <p className="text-xs text-[#757D79] leading-relaxed">
+              <div
+                onClick={() => onNavigate('evidence')}
+                className="p-4 rounded-lg bg-white border border-[#DCD8CF] hover:border-[#1E6B5E] transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-[#1B211E] group-hover:text-[#1E6B5E] transition-colors">
+                    Clinical reviewers
+                  </h4>
+                  <ArrowRight className="w-4 h-4 text-[#757D79] group-hover:text-[#1E6B5E] group-hover:translate-x-1 transition-all" />
+                </div>
+                <p className="text-xs text-[#757D79] leading-relaxed mt-1">
                   Practising clinical pharmacists to review and sign cases. Named credit on every case you approve for training.
                 </p>
               </div>
 
-              <div className="p-4 rounded-lg bg-white border border-[#DCD8CF]">
-                <h4 className="text-sm font-bold text-[#1B211E] mb-1">Hospitals and professional associations</h4>
-                <p className="text-xs text-[#757D79] leading-relaxed">
+              <div
+                onClick={() => onNavigate('institutions')}
+                className="p-4 rounded-lg bg-white border border-[#DCD8CF] hover:border-[#1E6B5E] transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-[#1B211E] group-hover:text-[#1E6B5E] transition-colors">
+                    Hospitals and professional associations
+                  </h4>
+                  <ArrowRight className="w-4 h-4 text-[#757D79] group-hover:text-[#1E6B5E] group-hover:translate-x-1 transition-all" />
+                </div>
+                <p className="text-xs text-[#757D79] leading-relaxed mt-1">
                   Departmental CPD, stewardship training and documentation capability, aligned with Directive No. 332/2020.
                 </p>
               </div>
 
-              <div className="p-4 rounded-lg bg-white border border-[#DCD8CF]">
-                <h4 className="text-sm font-bold text-[#1B211E] mb-1">Funders and partners</h4>
-                <p className="text-xs text-[#757D79] leading-relaxed">
+              <div
+                onClick={() => onNavigate('about')}
+                className="p-4 rounded-lg bg-white border border-[#DCD8CF] hover:border-[#1E6B5E] transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-[#1B211E] group-hover:text-[#1E6B5E] transition-colors">
+                    Funders and partners
+                  </h4>
+                  <ArrowRight className="w-4 h-4 text-[#757D79] group-hover:text-[#1E6B5E] group-hover:translate-x-1 transition-all" />
+                </div>
+                <p className="text-xs text-[#757D79] leading-relaxed mt-1">
                   Support for case development, clinical review honoraria, hosting and the AI grading layer through the pilot period.
                 </p>
               </div>
+
+              {onOpenSecurity && (
+                <div
+                  onClick={onOpenSecurity}
+                  className="p-4 rounded-lg bg-[#E4EEEA] border border-[#BBD7CF] hover:border-[#1E6B5E] transition-all cursor-pointer group shadow-2xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-[#1E6B5E]" />
+                      <h4 className="text-sm font-bold text-[#12463C] group-hover:text-[#1E6B5E] transition-colors">
+                        Cybersecurity, PHI &amp; Data Placement
+                      </h4>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#1E6B5E] group-hover:translate-x-1 transition-all" />
+                  </div>
+                  <p className="text-xs text-[#2A524A] leading-relaxed mt-1">
+                    Review our zero-identifiable-PHI policy, in-memory browser execution model, and server-side API secret isolation architecture.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -255,7 +397,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
                   <div className="pt-1 flex items-center gap-3">
                     <a
                       href={`mailto:${FORMSPREE_FALLBACK_EMAIL}?subject=PharmaMind%20Pilot%20Inquiry%20from%20${encodeURIComponent(name || 'Colleague')}&body=${encodeURIComponent(
-                        `Name: ${name}\nEmail: ${email}\nRole: ${role}\nInstitution: ${institution}\nCohort Size: ${cohortSize}\n\nMessage:\n${message}`
+                        `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nRole: ${role}\nInstitution: ${institution}\nCohort Size: ${cohortSize}\n\nMessage:\n${message}`
                       )}`}
                       className="inline-flex items-center gap-1.5 font-semibold text-rose-900 underline hover:no-underline"
                     >
@@ -282,11 +424,12 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
                   <div className="p-3 rounded bg-white/70 border border-[#BBD7CF]/60 text-xs space-y-1 font-mono text-[#1B211E]">
                     <div><strong>Institution:</strong> {submittedInquiry.institution}</div>
                     <div><strong>Role:</strong> {submittedInquiry.role}</div>
+                    {submittedInquiry.phone && <div><strong>Phone:</strong> {submittedInquiry.phone}</div>}
                     <div><strong>Target Cohort:</strong> {submittedInquiry.cohortSize}</div>
                     <div><strong>Logged:</strong> {submittedInquiry.submittedAt}</div>
                   </div>
                   <p className="text-[0.75rem] text-[#4B5350]">
-                    Our clinical education team in Addis Ababa will review your proposed cohort dates and follow up at <em>{submittedInquiry.email}</em>.
+                    Our clinical education team in Addis Ababa will review your proposed cohort dates and follow up at <em>{submittedInquiry.email}</em>{submittedInquiry.phone ? ` or call ${submittedInquiry.phone}` : ''}.
                   </p>
                   <div className="pt-2">
                     <button
@@ -328,6 +471,20 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
+                      <label className="block font-semibold text-[#1B211E] mb-1 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-[#1E6B5E]" />
+                        <span>Phone number (Optional)</span>
+                      </label>
+                      <input
+                        type="tel"
+                        disabled={isSubmitting}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+251 91 234 5678"
+                        className="w-full p-2.5 rounded-lg bg-[#FAF9F5] border border-[#DCD8CF] focus:outline-none focus:border-[#1E6B5E] disabled:opacity-60"
+                      />
+                    </div>
+                    <div>
                       <label className="block font-semibold text-[#1B211E] mb-1">I am a</label>
                       <select
                         value={role}
@@ -343,6 +500,9 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
                         <option>Funder or health partner</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block font-semibold text-[#1B211E] mb-1">Institution / Hospital</label>
                       <input
@@ -354,22 +514,21 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
                         className="w-full p-2.5 rounded-lg bg-[#FAF9F5] border border-[#DCD8CF] focus:outline-none focus:border-[#1E6B5E] disabled:opacity-60"
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold text-[#1B211E] mb-1">Target Cohort Size (if planning pilot)</label>
-                    <select
-                      value={cohortSize}
-                      disabled={isSubmitting}
-                      onChange={(e) => setCohortSize(e.target.value)}
-                      className="w-full p-2.5 rounded-lg bg-[#FAF9F5] border border-[#DCD8CF] focus:outline-none focus:border-[#1E6B5E] disabled:opacity-60"
-                    >
-                      <option>10–30 students (Small Clerkship)</option>
-                      <option>30–60 students (Standard Class Cohort)</option>
-                      <option>60–120 students (Full Faculty Year)</option>
-                      <option>Hospital Departmental Staff (CPD)</option>
-                      <option>Individual Reviewer (N/A)</option>
-                    </select>
+                    <div>
+                      <label className="block font-semibold text-[#1B211E] mb-1">Target Cohort Size (if planning pilot)</label>
+                      <select
+                        value={cohortSize}
+                        disabled={isSubmitting}
+                        onChange={(e) => setCohortSize(e.target.value)}
+                        className="w-full p-2.5 rounded-lg bg-[#FAF9F5] border border-[#DCD8CF] focus:outline-none focus:border-[#1E6B5E] disabled:opacity-60"
+                      >
+                        <option>10–30 students (Small Clerkship)</option>
+                        <option>30–60 students (Standard Class Cohort)</option>
+                        <option>60–120 students (Full Faculty Year)</option>
+                        <option>Hospital Departmental Staff (CPD)</option>
+                        <option>Individual Reviewer (N/A)</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div>
@@ -418,7 +577,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, onOpenSimu
               <div className="pt-1">
                 <button
                   onClick={onOpenSimulator}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B5E] hover:underline cursor-pointer"
                 >
                   <span>Launch Interactive Simulator Demo</span>
                   <ArrowRight className="w-3.5 h-3.5" />
